@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 如何在命令行打印一颗漂亮的二叉树？
+googlefonts: [Noto Sans SC]
 ---
 
 ## 为什么想要写这样一个东西
