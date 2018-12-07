@@ -71,11 +71,11 @@ author:
 # You can reorder the items to define the link order.
 # If you want to add a new link that isn't here, you'll need to also edit the file _data/SocialNetworks.yml
 social-network-links:
-  rss: true
+  # rss: true
   email: "currypseudo@gmail.com"
   # facebook: daattali
   github: CurryPseudo
-  wechat: jesonxiake
+  # wechat: jesonxiake
   # twitter: daattali
 #  reddit: yourname
 #  google-plus: +DeanAttali
@@ -87,7 +87,7 @@ social-network-links:
 #  youtube: user/deanat78
 #  spotify: yourname
 #  telephone: +14159998888
-#  steam: deanat78
+  steam: Pseudo
 #  twitch: yourname
 #  yelp: yourname
 
