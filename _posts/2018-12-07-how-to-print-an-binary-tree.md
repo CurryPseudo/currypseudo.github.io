@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Test
+title: Test
 ---
 
 ## 为什么想要写这样一个东西
