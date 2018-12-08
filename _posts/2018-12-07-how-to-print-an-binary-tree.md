@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 如何在命令行打印一颗漂亮的二叉树？
+title: 如何用C++在命令行打印一颗漂亮的二叉树？
 googlefonts: [Noto Sans SC]
 ---
 
