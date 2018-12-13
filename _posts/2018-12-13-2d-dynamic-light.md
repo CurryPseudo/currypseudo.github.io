@@ -161,7 +161,7 @@ public class CircleHitPoint {
 
 之后我看到了GameDev.net上的[这篇文章](http://archive.gamedev.net/archive/reference/programming/features/2dsoftshadow/)，让我一拍脑袋。原来没有必要一次性将光照画出来，而是可以分为几步：
 
-1. Clear阴影贴图（一张单通道贴图）
+1. Clear阴影贴图（一张单通道的，等同屏幕比例的贴图）
 2. 对每个光源：
    1. 绘制该光源造成的阴影到阴影贴图上
    2. 将光源绘制到光照贴图上（同时对阴影贴图进行采样）
@@ -223,4 +223,25 @@ void UpdateShadowMesh() {
 }
 ```
 
-代码中的数学计算很简单，参照图示应该很好理解。
+代码中的数学计算很简单，参照图示应该很好理解。
+
+在绘制光源时对阴影贴图采样，令光照值和阴影值相乘，绘制到光照贴图上。
+
+由于我们不再通过Mesh顶点的颜色来传递光照距离缩减，我们每个光源可以用一张简单的quad mesh来绘制，而光照距离衰减在fragment shader中解决。
+
+我点光源的fragment shader是这样的：
+
+```c
+float4 frag(v2f IN) : COLOR
+{
+    float2 dir = IN.world - _LightPos;
+    float norm = length(dir) / _LightMaxDis;
+    norm = saturate(norm);
+    float4 c = float4(_LightColor.xyz * smoothstep(0, 1, (1 - norm)), 1);
+    c.xyz *= 1 - tex2D(_ShadowMap, IN.screen.xy).r;
+    return c;
+}
+```
+
+我的阴影贴图是反色绘制的（阴影处是白，非阴影处是黑，这样可以简单地Blend add），所以在采样相乘的时候需要`1 - c.r`来反色回去。而光照距离衰减我用了一个smoothstep函数使之更加平滑。
+
