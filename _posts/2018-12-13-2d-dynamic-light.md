@@ -151,7 +151,7 @@ public class CircleHitPoint {
 }
 ```
 
-这种方式用来做硬阴影的效果非常好，也很简单，导致我一度觉得这是最终的解决方案。
+这种方式用来做硬阴影的效果非常好，也很简单，我一度觉得这是最终的解决方案。
 
 在后续实现软阴影的时候，我没有放弃这个做法，而是在绘制完整个光照贴图以后，对光照贴图做了一次高斯模糊（其实更好的做法是对每个光源绘制的光照进行光照朝向的法线模糊）。
 
@@ -159,7 +159,7 @@ public class CircleHitPoint {
 
 这使我回过头来思考：对于2d遮挡的软阴影，有没有更好更快的实现方式？
 
-之后我看到了GameDev.net上的[这篇文章](http://archive.gamedev.net/archive/reference/programming/features/2dsoftshadow/)，让我一拍脑袋。原来没有必要一次性将光照画出来，而是分为几步：
+之后我看到了GameDev.net上的[这篇文章](http://archive.gamedev.net/archive/reference/programming/features/2dsoftshadow/)，让我一拍脑袋。原来没有必要一次性将光照画出来，而是可以分为几步：
 
 1. Clear阴影贴图（一张单通道贴图）
 2. 对每个光源：
