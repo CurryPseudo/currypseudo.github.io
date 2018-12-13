@@ -229,7 +229,7 @@ void UpdateShadowMesh() {
 
 由于我们不再通过Mesh顶点的颜色来传递光照距离缩减，我们每个光源可以用一张简单的quad mesh来绘制，而光照距离衰减在fragment shader中解决。
 
-我点光源的fragment shader是这样的：
+点光源的fragment shader是这样的：
 
 ```c
 float4 frag(v2f IN) : COLOR
@@ -243,5 +243,5 @@ float4 frag(v2f IN) : COLOR
 }
 ```
 
-我的阴影贴图是反色绘制的（阴影处是白，非阴影处是黑，这样可以简单地Blend add），所以在采样相乘的时候需要`1 - c.r`来反色回去。而光照距离衰减我用了一个smoothstep函数使之更加平滑。
+阴影贴图是反色绘制的（阴影处是白，非阴影处是黑，这样可以简单地Blend add），所以在采样相乘的时候需要`1 - c.r`来反色回去。而光照距离衰减我用了一个smoothstep函数使之更加平滑。
 
