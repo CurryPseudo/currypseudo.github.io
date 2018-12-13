@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 在unity实现一个足够快的2d动态光照系统（一）
+title: 在unity实现一个足够快的2d动态光照（一）
 googlefonts: [Noto Sans SC]
 ---
 
@@ -133,7 +133,10 @@ public class CircleHitPoint {
             float rayDegree = deltaDegree * i;
             var hit = AngleRayCast(rayDegree);
             if(i > 0) {
-				foreach(var hitInfo in BinaryFindEdgeAndReturnPoint(new HitInfo(lastHit, lastDegree), new HitInfo(hit, rayDegree))) {
+                var lastHitInfo = new HitInfo(lastHit, lastDegree);
+                var currentHitInfo = new HitInfo(hit, rayDegree);
+                var hitInfos = BinaryFindEdgeAndReturnPoint(lastHitInfo, currentHitInfo);
+				foreach(var hitInfo in hifInfos) {
 					yield return hitInfo;
 				}
             }
@@ -152,7 +155,7 @@ public class CircleHitPoint {
 
 在后续实现软阴影的时候，我没有放弃这个做法，而是在绘制完整个光照贴图以后，对光照贴图做了一次高斯模糊（其实更好的做法是对每个光源绘制的光照进行光照朝向的法线模糊）。
 
-然而高斯模糊的开销非常大，导致游戏在一些对后处理支持的不是很好的平台上帧数奇低无比（之前在开发的一个采用模糊的方式来实现软阴影的游戏在我的Macbook Pro上只有20FPS）。
+然而高斯模糊的开销非常大，导致游戏在一些对后处理支持的不是很好的平台上奇慢无比（之前在开发的一个采用模糊的方式来实现软阴影的游戏在我的Macbook Pro上只有20FPS）。
 
 这使我回过头来思考：对于2d遮挡的软阴影，有没有更好更快的实现方式？
 
