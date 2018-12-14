@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 在unity实现一个足够快的2d动态光照（一）
+title: 在unity实现足够快的2d动态光照（一）
 bigimg: /img/2018-12-13/finalEffect.png
 googlefonts: [Noto Sans SC]
 ---
