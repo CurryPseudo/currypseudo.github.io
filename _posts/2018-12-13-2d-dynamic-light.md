@@ -1,6 +1,7 @@
 ---
 layout: post
 title: 在unity实现一个足够快的2d动态光照（一）
+image: /img/2018-12-13/finalImage.png
 googlefonts: [Noto Sans SC]
 ---
 
@@ -46,7 +47,7 @@ googlefonts: [Noto Sans SC]
 ![lightMesh](../img/2018-12-13/lightMesh.png)  
 而有遮挡的光源会生成一个残缺的Mesh：
 ![lightMesh1](../img/2018-12-13/lightMesh1.png)  
-上图中NMLK点与GFED等点本质上并没有什么不同，只不过NMLK在`Raycast`中击中了实在的碰撞体，而GFED在达到光源范围最远处时击中了“假想碰撞体”。
+上图中`NMLK`点与`GFED`等点本质上并没有什么不同，只不过NMLK在`Raycast`中击中了实在的碰撞体，而GFED在达到光源范围最远处时击中了“假想碰撞体”。
 3. 因为光源的强度会随距离衰减，我们为光照Mesh中不同的顶点赋值不同的颜色值使之中心最亮，边缘最暗（2d中的光源，线性衰减效果已经足够好）。
 
 其中获取周围遮挡点的实现可以参考：
@@ -173,7 +174,7 @@ public class CircleHitPoint {
 什么意思？举个例子，假设我要绘制一条边AB的硬阴影，我生成这样一张阴影Mesh：
 ![shadowMesh](../img/2018-12-13/shadowMesh.png)  
 
-其中DE是AB的平行线，圆的半径是光源的最大衰减距离（该距离外不绘制光照）。原文中的做法是将DE边投射得足够远直至大于屏幕宽度，而我这边的做法是将其投射至光源最大衰减距离处，也就是说DE是该圆的切线。
+其中`DE`是`AB`的平行线，圆的半径是光源的最大衰减距离（该距离外不绘制光照）。原文中的做法是将`DE`边投射得足够远直至大于屏幕宽度，而我这边的做法是将其投射至光源最大衰减距离处，也就是说`DE`是该圆的切线。
 
 具体的Mesh生成代码如下：
 
@@ -219,7 +220,6 @@ void UpdateShadowMesh() {
     }
     shadowMesh.SetVertices(vertices);
     shadowMesh.SetTriangles(triangles, 0);
-    shadowMesh.RecalculateNormals();
 }
 ```
 
@@ -243,7 +243,7 @@ float4 frag(v2f IN) : COLOR
 }
 ```
 
-阴影贴图是反色绘制的（阴影处是白，非阴影处是黑，这样可以简单地Blend add），所以在采样相乘的时候需要`1 - c.r`来反色回去。而光照距离衰减我用了一个smoothstep函数使之更加平滑。
+阴影贴图是反色绘制的（阴影处是白，非阴影处是黑，这样可以简单地Blend add），所以在采样相乘的时候需要`1 - c.r`来反色回去。而光照距离衰减我用了一个`smoothstep`函数使之更加平滑。
 
 ## 软阴影
 
@@ -253,7 +253,7 @@ float4 frag(v2f IN) : COLOR
 
 ![occlusion](../img/2018-12-13/occlusion.png)
 
-然而现实生活中不存在绝对理想的点光源，光源是有体积的。一点E的亮度是光源体积上所有与E无遮挡的点带给它的亮度的积分，如下图：
+然而现实生活中不存在绝对理想的点光源，光源是有体积的。一点E的亮度是光源体积上所有与`E`无遮挡的点带给它的亮度的积分，如下图：
 
 ![occlusion1](../img/2018-12-13/occlusion1.png)
 
@@ -263,7 +263,7 @@ float4 frag(v2f IN) : COLOR
 
 ![shadowMesh1](../img/2018-12-13/shadowMesh1.png)
 
-图中AAiAo、BBoBi为半影区域，ABBiAi为全影区域，除此之外的区域一定是被整个光源照亮的（相对遮挡边缘AB而言）。
+图中`AAiAo`、`BBoBi`为半影区域，`ABBiAi`为全影区域，除此之外的区域一定是被整个光源照亮的（相对遮挡边缘AB而言）。
 
 GameDev.net那篇文章给出的方案是，用一张半影贴图来绘制半影区域：
 
@@ -279,18 +279,18 @@ GameDev.net那篇文章给出的方案是，用一张半影贴图来绘制半�
 
 ![shadowMesh3](../img/2018-12-13/shadowMesh3.png)
 
-原因很简单，此时不再存在什么全影区域，B点的半影区域将整个AB及A的半影区域完全笼罩了。即使我们修正这个扭曲的Mesh，我们只绘制B及只绘制A的半影区域，或是都绘制，结果也是错误的。采样半影贴图在这个场景下永远无法正确地绘制阴影。
+原因很简单，此时不再存在什么全影区域，`B`点的半影区域将整个`AB`及`A`的半影区域完全笼罩了。即使我们修正这个扭曲的Mesh，我们只绘制`B`及只绘制`A`的半影区域，或是都绘制，结果也是错误的。采样半影贴图在这个场景下永远无法正确地绘制阴影。
 
 这让我萌生了一个想法：能不能只用Mesh表示最小阴影区域，而在fragment shader中计算实际的亮度？
 
 ### 遮挡值计算
 
-由于阴影绘制只是以一条遮挡边AB为基本单位，在shader中计算遮挡变得不是那么遥不可及。
+由于阴影绘制只是以一条遮挡边`AB`为基本单位，在shader中计算遮挡变得不是那么遥不可及。
 
 我们在计算遮挡时需要如下几条信息：
 
-* A点位置
-* B点位置
+* `A`点位置
+* `B`点位置
 * 光源位置
 * 当前绘制片段的世界位置
 * 光源的体积半径（我们假设所有体积光源都是球光源/圆光源）
@@ -303,19 +303,19 @@ GameDev.net那篇文章给出的方案是，用一张半影贴图来绘制半�
 
 
 
-此处的遮挡值为∠AEB/∠FEG = α / β  = 8.5 / 27 = 0.3148
+此处的遮挡值为`∠AEB/∠FEG = α / β  = 8.5 / 27 = 0.3148`
 
-由于在此场景下，求过点E的圆C的两条切线EF、EG是十分昂贵的计算，我们还可以对光照角度的两条边进行近似：
+由于在此场景下，求过点`E`的圆`C`的两条切线`EF`、`EG`是十分昂贵的计算，我们还可以对光照角度的两条边进行近似：
 
 ![occlusion3](../img/2018-12-13/occlusion3.png)
 
-此处光照角度为∠FEG，FG为与CE垂直的直径。
+此处光照角度为`∠FEG`，`FG`为与`CE`垂直的直径。
 
-计算遮挡值也很简单，我们设EG及EF边中其中一个为起始边，一个为终结边，在其之间的点的角度值标准化为[0, 1]之间的一个数。那么：
+计算遮挡值也很简单，我们设`EG`及`EF`边中其中一个为起始边，一个为终结边，在其之间的点的角度值标准化为[0, 1]之间的一个数。那么：
 
 ![occlusionMath](../img/2018-12-13/occlusionMath.png)
 
-注意在计算时，若EP向量在EG向量的逆时针方向，∠PEG是负值。
+注意在计算时，若`EP`向量在`EG`向量的逆时针方向，`∠PEG`是负值。
 
 问题在于，到底哪条该当作起点，这是不能随意定的。
 
@@ -344,7 +344,190 @@ float dirBetweenAngle(float2 v1, float2 v2) {
 
 注意，返回夹角的函数返回的是一个绝对值在180°以内，带符号的角度（以顺时针为正方向）。
 
+假设我们全部片段将`EG`当作起始边计算遮挡值。
 
+![occlusion4](../img/2018-12-13/occlusion4.png)
 
+![occlusion5](../img/2018-12-13/occlusion5.png)
 
+如上图所示，当`AB`横跨过`EG`边的两种情况时，计算的遮挡值必然是正确的。
 
+但是若`AB`不横跨`EG`，同时`EA`向量相对`EG`向量在逆时针方向时，计算的遮挡值将会是错误的，如下：
+
+![occlusion6](../img/2018-12-13/occlusion6.png)
+
+在上图中，`A`在我们设想中应该遮挡掉`∠FEB`部分的光照，但是由于我们的角度计算方式，取了角度小于180度的那一边，`A`点的值在`clamp`前是一个负值，导致其计算结果是遮挡掉了`∠BEG`部分的光照。
+
+解决这个错误的方式是：
+
+* 判断`AB`是否横跨`EG`边（边`EG`是否在`∠AEB`内）
+  * 若横跨了，则以`EG`为起始边
+  * 若未横跨，则以`EF`为起始边
+
+在fragment shader中计算遮挡值的最终代码如下：
+
+```c
+// [-180, 180]
+float dirAngle(float2 v) {
+    float angle = atan2(v.y, v.x);
+    angle = degrees(angle);
+    return angle;
+}
+// [-360, 360] norm to [-180, 180]
+float normAngle(float angle) {
+    angle = angle - step(180, angle) * 360;
+    angle = angle + step(angle, -180) * 360;
+    return angle;
+}
+// [-180, 180]
+float dirBetweenAngle(float2 v1, float2 v2) {
+    return normAngle(dirAngle(v1) - dirAngle(v2));
+}
+float2 _LightPos;
+float _LightVolumeRadius;
+float4 frag(v2f IN) : COLOR
+{
+    float2 CE = IN.E - _LightPos;                 
+    // CE的法线
+    float2 CENorm = normalize(float2(-CE.y, CE.x)) * _LightVolumeRadius;
+    float2 dirF = (_LightPos - CENorm) - IN.E;
+    float2 dirG = (_LightPos + CENorm) - IN.E;
+    float2 dirA = IN.A - IN.E;
+    float2 dirB = IN.B - IN.E;
+    float full = dirBetweenAngle(dirF, dirG);
+    // 若EA在EB顺时针端，为1，否则为0
+    float ABiggerThanB = step(0, dirBetweenAngle(dirA, dirB));
+    //顺时针端的边
+    float2 dirCW = ABiggerThanB * (dirA - dirB) + dirB;
+    //偏逆时针端的边
+    float2 dirCCW = dirA + dirB - dirCW;
+    //若AB跨过EG，为1，否则为0
+    float crossG = step(0, dirBetweenAngle(dirG, dirCCW)) * step(0, dirBetweenAngle(dirCW, dirG));
+    float sign = crossG * 2 - 1;
+    float2 startingEdge = dirF + (dirG - dirF) * crossG;
+    // saturate(x) <=> clamp(x, 0, 1)
+    float valueCW = saturate(sign * dirBetweenAngle(dirCW, startingEdge) / full);
+    float valueCCW = saturate(sign * dirBetweenAngle(dirCCW, startingEdge) / full);
+    float occlusion = abs(valueCW - valueCCW);
+    return occlusion;
+}
+```
+
+大家知道我们要尽量避免在shader代码中使用条件语句，所以我用了`step`函数来代替条件判断。
+
+现在，我们真的可以较为真实地计算一条边的遮挡了。
+
+### 最小阴影Mesh
+
+解决了如何在shader中计算遮挡，我们还要考虑如何绘制一个最小的、简单的、不重叠的阴影Mesh。
+
+在大多数情况下，我们可以简单地绘制两个三角形：
+
+![](../img/2018-12-13/shadowMesh4.png)
+
+由于我们不再需要区分半影与全影区域，我们只需要`Ao`与`Bo`点，不再需要`Ai`与`Bi`点。其中`CBo`与`CAo`也进行了与遮挡计算shader一致的近似。
+
+在前面讨论过的，还需考虑B点或A点的半影盖住另一点的半影，全影部分消失的情况。
+
+![shadowMesh5](../img/2018-12-13/shadowMesh5.png)
+
+这个时候我们甚至不用画两个三角形，只需要画一个三角形就够了。
+
+我们先要考虑一下，这种情况出现的条件是什么？
+
+此时`A`在`BBiBo`三角形的内部，或者说，`A`在`BBi`边的下方。
+
+设`BiB`向量顺时针90度的法线是`BiBNormal`，那么这种情况出现的条件是`Dot(BiBNormal, AB) > 0`。
+
+将此处的A与B交换的情况也是一样的，在这里就不再复述。
+
+生成最小阴影Mesh的代码如下
+
+```csharp
+List<Vector3> vertices = new List<Vector3>();
+List<Vector2> apos = new List<Vector2>();
+List<Vector2> bpos = new List<Vector2>();
+List<int> triangles = new List<int>();
+foreach(var edge in circleHitPoint.ExtractEdge()) {
+    Vector2 A = edge.A;
+    Vector2 B = edge.B;
+    Vector2 C = circleHitPoint.center;
+    Func<Vector2, Vector2, Vector2> normal = (c, p) => {
+        Vector2 dir = p - c;
+        return new Vector2(-dir.y, dir.x).normalized;
+    };
+    Vector2 ABnormal = -normal(A, B);
+    Vector2 CAO = normal(C, A) * volumeRadius + C;
+    Vector2 CBO = -normal(C, B) * volumeRadius + C;
+    Func<Vector2, Vector2, Vector2, Vector2> project = (n, origin, point) => {
+        float disToPoint = Vector2.Dot(origin - point, n);
+        disToPoint = Mathf.Abs(disToPoint);
+        float delta = circleHitPoint.radius - disToPoint;
+        delta = Mathf.Max(0, delta);
+        float scale = (delta + disToPoint) / disToPoint;
+        return (point - origin) * scale + origin;
+    };
+    if(Vector2.Dot((B - A), normal(A, CAO)) >= 0) {
+        Vector2 CBI = normal(C, B) * volumeRadius + C;
+        triangles.Add(vertices.Count + 0);
+        triangles.Add(vertices.Count + 2);
+        triangles.Add(vertices.Count + 1);
+        vertices.Add(WorldV2ToLocalV3(B));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(project((B - C).normalized, CBI, B)));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(project((B - C).normalized, CBO, B)));
+        apos.Add(A);
+        bpos.Add(B);
+    }
+    else if(Vector2.Dot((A - B), normal(CBO, B)) >= 0) {
+        Vector2 CAI = -normal(C, A) * volumeRadius + C;
+        triangles.Add(vertices.Count + 0);
+        triangles.Add(vertices.Count + 2);
+        triangles.Add(vertices.Count + 1);
+        vertices.Add(WorldV2ToLocalV3(A));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(project((A - C).normalized, CAO, A)));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(project((A - C).normalized, CAI, A)));
+        apos.Add(A);
+        bpos.Add(B);
+    }
+    else {
+        triangles.Add(vertices.Count + 0);
+        triangles.Add(vertices.Count + 1);
+        triangles.Add(vertices.Count + 3);
+        triangles.Add(vertices.Count + 0);
+        triangles.Add(vertices.Count + 3);
+        triangles.Add(vertices.Count + 2);
+        vertices.Add(WorldV2ToLocalV3(A));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(B));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(project(ABnormal, CAO, A)));
+        apos.Add(A);
+        bpos.Add(B);
+        vertices.Add(WorldV2ToLocalV3(project(ABnormal, CBO, B)));
+        apos.Add(A);
+        bpos.Add(B);
+    }
+}
+shadowMesh.SetVertices(vertices);
+shadowMesh.SetTriangles(triangles, 0);
+shadowMesh.SetUVs(0, apos);
+shadowMesh.SetUVs(1, bpos);
+this.shadowMesh = shadowMesh;
+return shadowMesh;
+```
+
+### 优化的余地
+
+在我描述的方法下，每一帧都需要对光源旁的每个遮挡体边缘动态生成大量阴影Mesh，这显然对CPU的负担非常大。一种优化的做法是阴影Mesh对每个遮挡体的每条边生成，遮挡体的形状固定以后不会再变，用不同的uv坐标来表示不同的顶点（用不同的uv坐标来区分A、Ao、Ai），阴影Mesh的形状在Vertex shader当中计算。
+
+由于一切计算在shader中可读性都会变得很差，我在这里就不展开介绍了，原理都是差不多的。
