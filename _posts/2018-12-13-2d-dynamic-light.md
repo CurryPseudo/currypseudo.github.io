@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 在unity实现一个足够快的2d动态光照（一）
-image: /img/2018-12-13/finalImage.png
+image: /img/2018-12-13/finalEffect.png
 googlefonts: [Noto Sans SC]
 ---
 
